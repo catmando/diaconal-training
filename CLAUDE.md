@@ -191,7 +191,8 @@ underscore inside a URL is not mistaken for an underline.
 
 ### The roles card — `make_roles_card.sh`
 
-Turns `Roles for Concelebrating Deacons.pdf` into `art/roles_card.pdf`: the
+Turns `Roles for Concelebrating Deacons.pdf` — itself an export of
+`rubrics-for-2-8-deacons.numbers`, see §6 — into `art/roles_card.pdf`: the
 chart on a Letter sheet inside a dashed 3⅜ × 5¼ in rectangle, to print at
 **100%** and cut out to fit a service book. It also writes
 `art/roles_chart.png` for the page and the printed document.
@@ -360,16 +361,36 @@ roles are worth highlighting. Seen so far: `D1`, `D2`, `AS1+2`, `AS3+4`,
 `DEACONS` should be `D1+D2` for consistency, and whether long codes should
 render smaller, since the role is a bold prefix that eats width.
 
-**✅ The diocesan roles chart arrived 26 Aug 2026** —
-`Roles for Concelebrating Deacons.pdf`, in the repo. It covers **two through
+**✅ The diocesan roles chart arrived 26 Aug 2026.** It covers **two through
 eight** deacons (not one through four as expected), which means it answers
-"more than two" thoroughly and says nothing about serving with one.
+"more than two" thoroughly and says nothing about serving with one. Source
+line on the original: Pdn. K. Sokolov, revised 1 June 2008.
 
-It is appendix E of the rubric, shown as `art/roles_chart.png` and offered as
-a card to print and cut out. **It still has to be read against the
-annotations**: it is the thing that could change annotation *text* rather than
-timings, and that pass has not been done. Source line on the chart itself:
-Pdn. K. Sokolov, revised 1 June 2008.
+**What is in the repo is not that original.** The user retyped and extended it
+in Apple Numbers, and everything downstream is built from that:
+
+    rubrics-for-2-8-deacons.numbers        the source — the only editable copy
+      → Roles for Concelebrating Deacons.pdf   an export (= "… v3")
+        → make_roles_card.sh
+          → art/roles_card.pdf, art/roles_chart.png
+            → appendix E, the printed cut-out card, the web page
+
+Its own byline says so: *"Modified from original by Pdn. K. Sokolov 2008 by
+Dn. M. VanDuyn 2026."* Every version of the PDF ever committed — back to the
+first, 26 Aug — reports `Creator: Numbers`, so **the Sokolov original has
+never been in the repo** and this file is the furthest back it goes. It went
+in on 14 Sep 2026; until then the chart could not be regenerated from a fresh
+clone at all. **To change the chart, edit the Numbers file and re-export** —
+editing the PDF strands the source.
+
+`Concelebration of Deacons v3.pdf` is byte-identical to the export and is a
+second tracked copy of it, not a different document.
+
+**It still has to be read against the annotations**: it is the thing that
+could change annotation *text* rather than timings, and that pass has not been
+done. Note for that pass: the chart assigns the trikirion and dikirion **by
+deacon number, not by side**, so it says who carries them and nothing about
+north/south or the crossing of §10.
 
 ---
 
@@ -613,6 +634,7 @@ what the written sources are vaguest about.
 | `make_document.py` | build the written rubric — markdown and HTML |
 | `make_manifest.sh` | regenerate `raw_clips.tsv` |
 | `make_roles_card.sh` | the roles chart → a card to print and cut out |
+| `rubrics-for-2-8-deacons.numbers` | **the roles chart's source**; the PDF is an export of it (§6) |
 | `README.md` | recovery runbook: bare Mac → finished video |
 | `CLAUDE.md` | this file |
 
