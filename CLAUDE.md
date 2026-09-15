@@ -2,9 +2,14 @@
 
 Claude Code reads this file automatically at the start of every session.
 
-Last updated: 19 August 2026. Encode complete. Now in git, with the raw
-footage archived off-machine; directories reorganized; annotation work in
-progress; the edit sheet is YAML and CSV support is gone.
+Last updated: 15 September 2026. Encode complete and in git, raw footage
+archived off-machine, the edit sheet a YAML directory. The rubric is
+published and **out for review**, so annotation edits now arrive in a
+trickle — `check_links.py` (§14) is what keeps that from moving links people
+already hold. The printed document carries **QR codes** that point at our own
+page rather than at YouTube (§14). Service-book insert pages live in
+`booklet/` (§16), and that toolchain has been extracted to a reusable
+template repo.
 
 ---
 
@@ -25,7 +30,7 @@ what to hold, which hand, what to say, and what cues trigger movement.
 
 | | |
 |---|---|
-| Version control | **DONE.** github.com/catmando/hierarchical-liturgy-deacon-training (public) |
+| Version control | **DONE.** github.com/catmando/diaconal-training (public) |
 | Raw footage backup | **DONE.** 37 clips on the `raw-footage-v1` release; restore verified (§12) |
 | Directory layout | **DONE.** `raw/` → `normalized/` → `output/` (§12) |
 | Normalize encode | **DONE.** 37 clips → `normalized/001.mp4`…`037.mp4` |
@@ -35,6 +40,9 @@ what to hold, which hand, what to say, and what cues trigger movement.
 | Roles chart | **ARRIVED 26 Aug 2026** (§6) |
 | Chapter titles in MKV | **VERIFIED WORKING** on real footage (§8) |
 | Edit sheet format | **DONE.** `annotations/`, split into three files 26 Aug 2026; CSV removed entirely (§4) |
+| Rubric, published | **OUT FOR REVIEW** since 14 Sep 2026 (§14) |
+| Printed QR codes | **DONE and LIVE**, 15 Sep 2026 — 34 section codes + masthead (§14) |
+| Service-book inserts | pages 56, 64–65, 136–137 built and in appendix E (§16) |
 
 ---
 
@@ -637,6 +645,8 @@ what the written sources are vaguest about.
 | `make_document.py` | build the written rubric — markdown and HTML |
 | `make_manifest.sh` | regenerate `raw_clips.tsv` |
 | `make_roles_card.sh` | the roles chart → a card to print and cut out |
+| `make_plate.sh` | a cut-out piece → a true-size PNG for the printed rubric (§16) |
+| `booklet/` | service-book insert pages, set in the book's own type (§16) |
 | `rubrics-for-2-8-deacons.numbers` | **the roles chart's source**; the PDF is an export of it (§6) |
 | `README.md` | recovery runbook: bare Mac → finished video |
 | `CLAUDE.md` | this file |
@@ -652,8 +662,32 @@ don't ask the user to re-supply them.
 
 ## 12. The repository and disaster recovery
 
-**github.com/catmando/hierarchical-liturgy-deacon-training** — public, owned
+**github.com/catmando/diaconal-training** — public, owned
 by `catmando` (not the `catprintlabs` org, to keep it off company billing).
+
+### ⚠ Renamed 15 Sep 2026, and the old name is a REDIRECT STUB
+
+It was `hierarchical-liturgy-deacon-training`. Renamed to something short
+enough to say aloud and type, **before** printed copies went out.
+
+**GitHub Pages does NOT redirect a project site after a rename.** This was
+verified, not assumed: seconds after the rename the old URL returned **404**
+while the new one returned 200. Git remotes and `github.com` URLs do redirect;
+the `github.io` site does not.
+
+So **github.com/catmando/hierarchical-liturgy-deacon-training** now exists as
+a tiny separate repo serving a redirect. `404.html` is the load-bearing half:
+Pages serves it for any unknown path, so `/rubric.pdf` and `/#c26` are carried
+across with path, query and fragment intact. It also **parks the old name**,
+which a rename releases for anyone to claim. **Do not delete that repo.**
+
+### A custom domain, later
+
+Adding one does not invalidate printed QR codes: once a custom domain is set,
+Pages redirects the `github.io` address to it, preserving the path. So paper
+printed today survives it. Worth testing one code end to end before relying on
+that at scale — and prefer a domain the user owns over a parish or diocesan
+one, since the printed sheets outlive any arrangement over someone else's DNS.
 
 ### Layout
 
@@ -687,8 +721,8 @@ every clip clears comfortably.
 Full runbook in `README.md`. The short version:
 
 ```bash
-git clone https://github.com/catmando/hierarchical-liturgy-deacon-training.git
-cd hierarchical-liturgy-deacon-training
+git clone https://github.com/catmando/diaconal-training.git
+cd diaconal-training
 ./check_environment.sh          # tools, ffmpeg filters, font, disk, auth
 ./restore_raw_clips.sh          # 6.8 GB into raw/, SHA-256 verified
 ./normalize_and_join.sh         # hours; overnight; resumable
@@ -803,9 +837,9 @@ An earlier cut at `o8MRc9T90hY` is superseded: it lacks the greeting plan
 card, so every chapter after the first sits 10s earlier.
 
 **Written rubric, online:**
-- https://catmando.github.io/hierarchical-liturgy-deacon-training/ — the
+- https://catmando.github.io/diaconal-training/ — the
   styled version, served by GitHub Pages from `docs/index.html`
-- https://github.com/catmando/hierarchical-liturgy-deacon-training/blob/main/RUBRIC.md
+- https://github.com/catmando/diaconal-training/blob/main/RUBRIC.md
   — the same words, rendered by GitHub itself
 
 Both are **public and indexable**, unlike the unlisted video. `RUBRIC.md`,
@@ -817,6 +851,135 @@ four appendices. All 34 chapters kept their id, title, timecode and player
 span through that change, so links already sent out still land where they
 did — worth re-checking the same way after any future regeneration, since
 about five people were holding the link at the time.
+
+### The published file names
+
+`printed.pdf` and `printed.docx` — renamed from `rubric.*` on 15 Sep 2026,
+with the repo, so an address can be said aloud. `index.html` stays as it is:
+it is what makes the bare URL work, and the bare URL is the easiest thing of
+all to type.
+
+    catmando.github.io/diaconal-training/                the page
+    catmando.github.io/diaconal-training/printed.pdf     the printed copy
+
+The masthead carries that address **in words as well as in code** — a QR is
+useless to anyone without a phone in their hand.
+
+### `--draft` — the watermark
+
+```bash
+python3 make_document.py --draft --video https://youtu.be/aRs9oqKMCd8
+```
+
+A flag, deliberately, and not a default: neither a watermarked final nor an
+unmarked draft can then happen by accident. `--draft "SOME TEXT"` for a
+different word.
+
+One `position:fixed` element does every page — WeasyPrint repeats a fixed box
+on each one — and the same rule serves the web page, where it is
+`pointer-events:none` so it cannot intercept a click.
+
+**It is light for a reason that is not taste.** The QR codes carry no white
+backdrop of their own; the page's white *is* their quiet zone, so ink laid
+across them eats into it. At 7% black it binarises as white and every code
+still reads — **verified by decoding all 35 with the watermark on.** If that
+colour is ever darkened, decode them again before printing.
+
+### ⚠ QR codes on the printed page — and why they point at US
+
+Added 15 September 2026, live the same day. **34 section codes plus one on
+the masthead.**
+
+Before this, the printed document had **no working route to the video at
+all**: `rubric_print.md` is built with links off, and the print stylesheet
+hides the poster and player (`.player,.pctl{display:none}`). The 34 section
+links existed only as dead text.
+
+**The codes do NOT point at YouTube, and that is the entire point.**
+
+> YouTube will not let a video's file be replaced. Any re-upload mints a new
+> id — §14 records `o8MRc9T90hY` being superseded exactly that way — and a
+> printed sheet cannot be recalled. A code pointing at a YouTube id is frozen
+> the moment it is printed.
+
+So each section's code is:
+
+    https://catmando.github.io/diaconal-training/?play=c26#c26
+
+Our own page. A re-upload, a decision to publish the 37 clips separately, or
+leaving YouTube altogether is absorbed by **regenerating the page** — the
+paper stays correct. The page is an indirection layer, and that is worth more
+than the two extra QR modules it costs.
+
+It also fixes what prompted the work: **a bare YouTube link only starts, it
+never stops.** The section ran on into the next. There is no URL that bounds
+it — the watch page has no end parameter, and the embed player's `end=` was
+already tested here and rejected (see the END_GUARD comment: *"YouTube's own
+`end` cannot be trusted"*).
+
+### The `?play=cN` contract
+
+`END_GUARD` in `make_document.py` reads `?play=` on arrival and:
+
+1. scrolls to that section,
+2. opens its player in a **full-screen overlay** — black, with a × button,
+   Escape to close,
+3. lets the existing guard stop it at the section boundary, then closes the
+   overlay and leaves the reader on that section's **text**.
+
+**Not the Fullscreen API.** It needs a user gesture; a scan is a navigation,
+so `requestFullscreen()` is refused, and on iOS it does not apply to an
+iframe at all. A fixed overlay needs no permission and behaves the same
+everywhere. The reader can still reach true fullscreen from the player's own
+button, because tapping that *is* a gesture.
+
+**Autoplay is the browser's decision.** If a phone refuses, the player is
+built and sitting at the right second and one tap runs it. That is not a bug;
+do not "fix" it.
+
+The code carries **both** `?play=c26` and `#c26`, so with no JavaScript the
+reader still lands on the right section.
+
+### Things that cost time here, and would again
+
+- **The still and the QR must be the same height, and a QR image normally
+  carries its quiet zone INSIDE the picture.** Both boxes were 0.9in with
+  centres coinciding exactly, and the code still looked short beside the
+  photo, because its ink was only 0.803in. Generated with `border=0` the
+  image *is* the symbol, so a 0.9in box holds 0.9in of ink at any version.
+  The page's own white supplies the quiet zone, and the stylesheet keeps four
+  modules clear on every side. It also made the codes **more** robust — they
+  decode down to 75 dpi where before they failed below 110.
+- **A float narrows the LINES beside it, not the block box.** The first
+  attempt ran the grey ON SCREEN card's background under the still and the
+  caption under the first cue's text. `.chapter blockquote.card,.chapter
+  ol.cues,.chapter figure{clear:right}` fixes it, and the card is emitted
+  *before* the `<h2>` so the title flows alongside rather than below.
+- **Do not size the overlay with `100vw`/`100dvh`.** With width and height
+  both set it is over-constrained against `inset:0`. `inset:0` alone already
+  means "the viewport" and tracks a phone's collapsing address bar.
+- **A headless screenshot of this page comes out blank** even when the DOM
+  and computed styles are correct. Do not debug the CSS from it — inject a
+  diagnostic that reports `getBoundingClientRect()` and computed styles into
+  the DOM, and read that back with `--dump-dom`. An hour went into a blank
+  PNG that was a capture artifact.
+- **chromedriver on this machine is version 150 against Chrome 154**, so
+  WebDriver sessions will not start. `--headless=new --dump-dom` works.
+- **Pages does not swap every file at once.** After the push the new
+  `rubric.pdf` was live about a minute before the new `index.html`, so there
+  is a brief window where a scanned code reaches the old page. It resolves
+  itself; just do not panic-republish.
+
+How to re-verify the whole chain after any change:
+
+```bash
+python3 make_document.py --video https://youtu.be/aRs9oqKMCd8
+pdftoppm -png -r 300 docs/printed.pdf /tmp/p        # then zbarimg each page
+python3 check_links.py --live
+```
+
+Every code must decode, and every `?play=cN` must name a section id that
+exists in the live page.
 
 ### Checking that a link still lands — `check_links.py`
 
@@ -960,7 +1123,29 @@ below. Paths are rewritten per output — `art/…` in `RUBRIC.md`, `../art/…`
 in the `output/` copies, a data URI in the web page.
 
 **A paragraph may open with `@screen` or `@print`** and is kept only for that
-one; unmarked paragraphs, nearly all of them, appear in both. This exists
+one; unmarked paragraphs, nearly all of them, appear in both.
+
+**Since 15 Sep 2026 the same markers work on a ONE-LINE field** — a heading,
+or the colophon. The versions are written one per line and the matching one
+is taken; an unmarked line is used for both, so nothing in the sheet had to
+change when this was added:
+
+```yaml
+- heading: |
+    @screen How to use this webpage
+    @print  How to use this document
+```
+
+This exists because the front matter genuinely says different things now: on
+screen the reader presses play, on paper they scan a code. `line_for_medium()`
+does it, beside `for_medium()`, and `check_sheet.py` validates headings the
+same way it validates paragraphs — a mistyped `@sceen` in a heading is
+rejected by name.
+
+**The colophon lives in the sheet, not in the code.** It used to be a
+hardcoded string in `make_document.py`, which broke this project's own rule
+that words meant to be revised belong with the content. It is now
+`colophon:` in the `intro:` block and takes the markers like any prose. This exists
 because a download link is useful on screen and pointless on paper, where the
 same thing is a page you can already cut out:
 
@@ -1044,7 +1229,7 @@ Two things to be careful of, both learned the hard way:
   what was last committed, which is not necessarily what is being served.
 
   ```bash
-  curl -s "https://catmando.github.io/hierarchical-liturgy-deacon-training/?cb=$(date +%s)" \
+  curl -s "https://catmando.github.io/diaconal-training/?cb=$(date +%s)" \
     | diff - docs/index.html && echo "identical to what is live"
   ```
 
@@ -1109,3 +1294,76 @@ file, which a 3 GB video clears only if the quality drops further.
   generates one yet — the user chose "carry the field only" when the format
   was designed. It is what would make a thumb drive a package rather than a
   video file.
+
+---
+
+## 16. Service-book insert pages — `booklet/`
+
+Pages set in the **parish liturgy book's own type**, printed and pasted into
+the book where a hierarchical liturgy departs from the ordinary one. They
+reach the reader as **appendix E, "Pages to Cut Out"** — a download link on
+screen, a true-size plate on paper.
+
+**This is ordinary parish practice.** Pasting corrections into a service book
+is normally done by hand; this only makes a printed one. The fitting, the
+paper and the glue are the user's own well-trodden ground — **do not offer
+advice about them.** The job here is the typography and the words.
+
+| page | what | size |
+|---|---|---|
+| 56 | completion of the vesting | single leaf, 3.625 × 5.875in |
+| 64–65 | entrance prayers, with *Ton Despótēn* | spread, 7.25 × 5.875in |
+| 136–137 | great commemoration through *Is Polla Eti Despota* | spread |
+
+```bash
+cd booklet && python3 make_insert.py 136     # pages/136.txt -> insert_136.pdf
+./make_plate.sh booklet/insert_136.pdf art/insert_136_137.png 7.25 5.875
+```
+
+`booklet/SPEC.md` is authoritative for the measurements, and
+`make_insert.py --help` for the markup. Content is one plain text file per
+piece in `booklet/pages/`, using deliberately the same `**bold**`/`*italic*`
+as the annotations sheet.
+
+**The measurements were taken off a 450 ppi scan, not guessed**: page
+3.625 × 5.875in, measure 203.5pt, body x-height 4.55pt, leading 14.2pt, red
+`#d80c18`.
+
+Three things that cost real time:
+
+- **Match the x-height, never the nominal point size.** The book is
+  Jenson/Centaur (probably Adobe Jenson); the build uses **Junicode** (OFL).
+  Junicode's x-height runs small, so the body is **11.7pt**, giving 4.56pt
+  against the measured 4.55.
+- **At that size the regular cut sets ~11% wide**, so a page held fewer words
+  than the book's. The condensed axis (`wdth 75`) restores it. The test is
+  the opening paragraph setting in 6 lines, exactly as the book does.
+- **Hyphenation needs `pyphen`** (`pip3 install --break-system-packages
+  pyphen`). Without it WeasyPrint silently sets justified text with no
+  hyphens and the word spacing falls apart — which looks like a font problem
+  and is not.
+
+**Text that does not fit is silently lost**, spilling into a column beyond
+the sheet's trim. Every build reports the fit; believe it.
+
+Still open, recorded in `SPEC.md`: **page 137 is invented placeholder text and
+must be replaced**, and page 136 is transcribed from the scan and OCR-agreed
+but wants a human proofread before anything is glued into a book.
+
+### Extracted for reuse — `STOTS-typica-template`
+
+15 Sep 2026: the toolchain was extracted to
+**github.com/catmando/STOTS-typica-template**, a public GitHub *template*
+repo (press "Use this template" to start a project). `page.css` is the layout
+machinery and contains no measurement of any book; `book.toml` **is** the
+book, and ships the STOTS measurements, so an insert into that book needs no
+measuring at all.
+
+Verified by rebuilding all three pages here through the extracted tool and
+comparing with the PDFs already in use: **pixel-identical**. A fresh clone
+reproduces them too. `head_top`/`rule_top` ship as 0.116/0.176 rather than the
+measured 0.115/0.175 — a thousandth of an inch, and these are the numbers
+that produced the pages already pasted into books.
+
+`booklet/` here is **untouched** and still works standalone. Pointing it at
+the template is a separate job, not yet done.

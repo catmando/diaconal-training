@@ -42,7 +42,7 @@ from build import default_sheet
 from make_document import blocks, video_chapters, _first, mmss
 
 BASELINE = "published_links.tsv"
-SITE = "https://catmando.github.io/hierarchical-liturgy-deacon-training/"
+SITE = "https://catmando.github.io/diaconal-training/"
 
 # The page rounds to whole seconds before writing data-start/data-end, so a
 # sub-second drift that rounds to the same integer genuinely changes nothing

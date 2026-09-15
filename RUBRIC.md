@@ -2,7 +2,7 @@
 
 *For deacons, subdeacons and altar servers*
 
-[Watch the whole video](https://youtu.be/aRs9oqKMCd8) · [Download PDF](docs/rubric.pdf) · [Download Word](docs/rubric.docx)
+[Watch the whole video](https://youtu.be/aRs9oqKMCd8) · [Download PDF](docs/printed.pdf) · [Download Word](docs/printed.docx)
 
 ## How to use this webpage
 
@@ -22,7 +22,7 @@ running time of the whole service.
 There are also useful appendices at the end of the document
 (see the table of contents)
 
-`generated 15 Sep 2026, 18:33 · e99da7f`
+`generated 15 Sep 2026, 19:00 · 5c6c265`
 
 A step-by-step guide to serving at a hierarchical Divine Liturgy, from
 the greeting of the bishop at the doors through the Great Entrance,
@@ -1336,7 +1336,7 @@ by Subdeacons, and the Fans by either subdeacons or altar servers.*
 ![Roles for concelebrating deacons](art/roles_chart.png "card")
 
 A version sized to be cut out and kept in a service book is available
-as a printable sheet: [download the card](https://catmando.github.io/hierarchical-liturgy-deacon-training/roles_card.pdf).
+as a printable sheet: [download the card](https://catmando.github.io/diaconal-training/roles_card.pdf).
 
 Note: Print it at **100 percent** — not "fit to page", which would shrink it — and
 cut along the dashed line.
@@ -1359,7 +1359,7 @@ into the gutter first.
 **Page 56 — the completion of the vesting.** This page adds rubrics for the
 completion of the vesting of the Bishop; it is pasted over page 56.
 
-[Download the page](https://catmando.github.io/hierarchical-liturgy-deacon-training/page_56.pdf).
+[Download the page](https://catmando.github.io/diaconal-training/page_56.pdf).
 
 **Pages 64–65 — the entrance prayers.** The ordinary entrance prayers, with
 the hierarchical addition set where it belongs: after the priest's prayer
@@ -1367,12 +1367,12 @@ the deacon and choir intone *Ton Despótēn*, which is answered often and
 mispronounced easily, so it is given here with its pronunciation. The
 ordinary rite then resumes on page 65, undisturbed.
 
-[Download the sheet](https://catmando.github.io/hierarchical-liturgy-deacon-training/pages_64_65.pdf).
+[Download the sheet](https://catmando.github.io/diaconal-training/pages_64_65.pdf).
 
 **Pages 136–137 — the great commemoration.** From the offering through
 *Is Polla Eti Despota*. This one spans the open book, so it folds into the
 gutter and is pasted over both facing pages.
 
-[Download the sheet](https://catmando.github.io/hierarchical-liturgy-deacon-training/insert_136_137.pdf).
+[Download the sheet](https://catmando.github.io/diaconal-training/insert_136_137.pdf).
 
 ---

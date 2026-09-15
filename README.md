@@ -27,7 +27,7 @@ of every clip, so a restore can be proven byte-identical rather than assumed.
 Everything else — `normalized/`, `master.mp4`, the MKV, the subtitle and chapter
 files — is a build product and is rebuilt from those two inputs.
 
-[release]: https://github.com/catmando/hierarchical-liturgy-deacon-training/releases/tag/raw-footage-v1
+[release]: https://github.com/catmando/diaconal-training/releases/tag/raw-footage-v1
 
 ---
 
@@ -100,8 +100,8 @@ gh auth login
 ### 5. Clone
 
 ```bash
-git clone https://github.com/catmando/hierarchical-liturgy-deacon-training.git
-cd hierarchical-liturgy-deacon-training
+git clone https://github.com/catmando/diaconal-training.git
+cd diaconal-training
 ```
 
 ### 6. Check the machine before spending hours on it

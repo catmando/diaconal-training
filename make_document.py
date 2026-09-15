@@ -55,7 +55,7 @@ OUT = "output"
 
 # Where the published page lives. The printed QR codes point HERE rather than
 # at YouTube, which is the whole reason they keep working: see qr_uri().
-SITE = "https://catmando.github.io/hierarchical-liturgy-deacon-training/"
+SITE = "https://catmando.github.io/diaconal-training/"
 
 
 def build_stamp():
@@ -420,6 +420,11 @@ def for_medium(text, medium):
     return "\n\n".join(out)
 
 
+def pretty_url(url):
+    """The address as a person would type it: no scheme, no trailing slash."""
+    return re.sub(r"^https?://", "", url.strip()).rstrip("/")
+
+
 def line_for_medium(text, medium):
     """The same @screen / @print markers, for a field that is ONE line.
 
@@ -503,8 +508,8 @@ def render(sheet, linked, video_url, base=OUT, dl="", frames=None):
         add("")
     if video_url:
         add(f"[Watch the whole video]({video_url}) · "
-            f"[Download PDF]({dl}rubric.pdf) · "
-            f"[Download Word]({dl}rubric.docx)")
+            f"[Download PDF]({dl}printed.pdf) · "
+            f"[Download Word]({dl}printed.docx)")
         add("")
     medium = "screen" if linked else "print"
     for sec in fm.get("sections") or []:
@@ -766,7 +771,7 @@ def chapter_sections(sheet):
 
 
 def render_html(sheet, video_url, posters=None, medium="screen",
-                frames=None, site=SITE):
+                frames=None, site=SITE, draft=""):
     posters = posters or {}
     frames = frames or {}
     durs, chap_at = clip_durations(), video_chapter_starts()
@@ -792,6 +797,22 @@ def render_html(sheet, video_url, posters=None, medium="screen",
         '&display=swap">')
     add("<style>" + CSS + "</style>")
 
+    # A draft watermark, print and screen alike.
+    #
+    # In print this is ONE element: WeasyPrint repeats a position:fixed box on
+    # every page, so there is nothing to place per page and nothing to get out
+    # of step with the pagination.
+    #
+    # It sits BEHIND the content and very light, which is not only taste: the
+    # QR codes carry no white backdrop of their own — the page's white is
+    # their quiet zone — so ink laid across them eats into it. Light enough
+    # binarises as white and the codes still read. Verified by decoding every
+    # code with the watermark on; if this colour is ever darkened, decode them
+    # again.
+    if draft:
+        add(f'<div class="watermark" aria-hidden="true">'
+            f'{html.escape(draft)}</div>')
+
     add('<header class="masthead">')
     fm = front(sheet)
     if fm.get("subtitle"):
@@ -801,8 +822,8 @@ def render_html(sheet, video_url, posters=None, medium="screen",
     if video_url:
         add('  <p class="actions">'
             f'<a href="{html.escape(video_url)}">Watch the whole video</a>'
-            '<a href="rubric.pdf">Download PDF</a>'
-            '<a href="rubric.docx">Download Word</a></p>')
+            '<a href="printed.pdf">Download PDF</a>'
+            '<a href="printed.docx">Download Word</a></p>')
     # On paper the masthead's links are dead text, and a reader holding only
     # the printed copy has no way to reach the online one. This code is the
     # route. It is NOT one of the section codes: it plays nothing, it opens
@@ -814,8 +835,11 @@ def render_html(sheet, video_url, posters=None, medium="screen",
             add('  <div class="homeqr">')
             add(f'    <img src="{home}" alt="QR code linking to this '
                 f'document online">')
-            add('    <p>Scan to open this document online,<br>'
-                'with the videos</p>')
+            # The address in words as well as in code. A QR is
+            # useless to anyone without a phone to hand, and someone
+            # reading a printed page may simply want to type it.
+            add('    <p>Scan, or go to<br>'
+                f'<b>{html.escape(pretty_url(site))}</b></p>')
             add('  </div>')
     add(f'  <p class="build">{html.escape(build_stamp())}</p>')
     # The colophon is CONTENT, so it lives in the sheet with the words it
@@ -1386,6 +1410,16 @@ blockquote.card p{margin:0}
   margin:0 0 .5rem !important;
 }
 .note{color:var(--muted);margin:0 0 1.5rem}
+.watermark{
+  position:fixed; z-index:0; pointer-events:none; user-select:none;
+  top:50%; left:50%; transform:translate(-50%,-50%) rotate(-45deg);
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-size:8rem; letter-spacing:.22em; line-height:1;
+  color:rgba(120,110,95,.13); white-space:nowrap;
+}
+/* the page's own content sits above it */
+.masthead,.toc,.intro,.chapter{ position:relative; z-index:1 }
+
 /* Theatre — how a section looks when the page was opened by a scanned code.
    The player is taken out of the flow and fills the viewport; the page waits
    behind it. dvh rather than vh so a phone's collapsing address bar does not
@@ -1548,6 +1582,11 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
   .tc{color:#333}
   figure img{border:1px solid #999}
   .player,.pctl{display:none}
+  /* On paper the mark has to survive a photocopier without fogging the text
+     or the codes. Grey rather than a colour, and light. */
+  .watermark{
+    font-size:130pt; color:rgba(0,0,0,.07); letter-spacing:.18em;
+  }
 
   /* The video card: the section's own still, with a QR beside it. It floats
      into the space to the right of the heading, which is empty on paper, so
@@ -1648,7 +1687,7 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
 """
 
 
-def for_github(sheet, video_url, posters=None):
+def for_github(sheet, video_url, posters=None, draft=""):
     """Copies meant to be committed: GitHub renders the markdown in the repo,
     and Pages serves the HTML from docs/."""
     md = render(sheet, True, video_url, base=".", dl="docs/")
@@ -1676,7 +1715,7 @@ def for_github(sheet, video_url, posters=None):
             shutil.copy2(src, os.path.join("docs", name))
             print(f"  docs/{name}   "
                   f"{os.path.getsize(src) / 1024:.0f} KB   ({what})")
-    doc = render_html(sheet, video_url, posters)
+    doc = render_html(sheet, video_url, posters, draft=draft)
     with open(os.path.join("docs", "index.html"), "w", encoding="utf-8") as f:
         f.write(doc)
     print(f"  docs/index.html   {len(doc) / 1024:.0f} KB   (GitHub Pages)")
@@ -1692,7 +1731,7 @@ def convert(dest="docs"):
     made = []
 
     if shutil.which("weasyprint"):
-        pdf = os.path.join(OUT, "rubric.pdf")
+        pdf = os.path.join(OUT, "printed.pdf")
         # --encoding matters: without it the em dashes come out as mojibake
         r = subprocess.run(["weasyprint", "--encoding", "utf-8",
                             os.path.join(OUT, "rubric.html"), pdf],
@@ -1706,9 +1745,9 @@ def convert(dest="docs"):
 
     if shutil.which("pandoc"):
         # run from output/ so the ../art/ image paths resolve
-        r = subprocess.run(["pandoc", "rubric_print.md", "-o", "rubric.docx"],
+        r = subprocess.run(["pandoc", "rubric_print.md", "-o", "printed.docx"],
                            cwd=OUT, capture_output=True, text=True)
-        docx = os.path.join(OUT, "rubric.docx")
+        docx = os.path.join(OUT, "printed.docx")
         if r.returncode == 0 and os.path.exists(docx):
             made.append(docx)
         else:
@@ -1735,6 +1774,11 @@ def main():
     ap.add_argument("--site", default=SITE, metavar="URL",
                     help="the published page; the printed QR codes point "
                          "here, not at YouTube")
+    ap.add_argument("--draft", nargs="?", const="DRAFT", default="",
+                    metavar="TEXT",
+                    help="watermark every page (default DRAFT). A flag, not "
+                         "a default, so neither a watermarked final nor an "
+                         "unmarked draft can happen by accident.")
     ap.add_argument("--no-frames", action="store_true",
                     help="leave the video frames out of the PDF")
     a = ap.parse_args()
@@ -1757,7 +1801,7 @@ def main():
               f"{len(text.split())} words")
 
     docs_posters = poster_frames(jobs, "docs")
-    for_github(a.sheet, a.video, docs_posters)
+    for_github(a.sheet, a.video, docs_posters, draft=a.draft)
 
     # output/ sits beside docs/, so the print copy points at the same posters
     # rather than keeping a second set of them.
@@ -1769,7 +1813,8 @@ def main():
     frames = {} if a.no_frames else annotation_frames(annotation_times())
     doc = render_html(a.sheet, a.video,
                       {k: "../docs/" + v for k, v in docs_posters.items()},
-                      medium="print", frames=frames, site=a.site)
+                      medium="print", frames=frames, site=a.site,
+                      draft=a.draft)
     path = os.path.join(OUT, "rubric.html")
     with open(path, "w", encoding="utf-8") as f:
         f.write(doc)
