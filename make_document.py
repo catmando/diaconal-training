@@ -39,7 +39,7 @@ Timecodes are positions in the ORIGINAL clip, matching the sheet. Chapter
 headings additionally carry their position in the finished video when
 output/chapters.txt is present from a full build.
 """
-import argparse, base64, datetime, html, mimetypes, os, re, shutil
+import argparse, base64, datetime, html, io, mimetypes, os, re, shutil
 import subprocess, sys
 
 try:
@@ -52,6 +52,10 @@ from check_sheet import resolve, clip_durations, is_span, as_list, _first
 from build import load_sheet, default_sheet
 
 OUT = "output"
+
+# Where the published page lives. The printed QR codes point HERE rather than
+# at YouTube, which is the whole reason they keep working: see qr_uri().
+SITE = "https://catmando.github.io/hierarchical-liturgy-deacon-training/"
 
 
 def build_stamp():
@@ -416,6 +420,38 @@ def for_medium(text, medium):
     return "\n\n".join(out)
 
 
+def line_for_medium(text, medium):
+    """The same @screen / @print markers, for a field that is ONE line.
+
+    for_medium() above splits on blank lines, which is right for prose and
+    wrong for a heading or a colophon: those are single lines, so the
+    alternatives are written one per line and the matching one is taken.
+
+        heading: |
+          @screen How to use this webpage
+          @print  How to use this document
+
+    An unmarked line is used for both, which is the common case and means
+    nothing had to change in the sheet when this was added. If several lines
+    survive the filter the first wins, so a stray line cannot silently
+    concatenate itself onto a title.
+    """
+    text = str(text or "")
+    if "@" not in text:
+        return text.strip()
+    for line in text.splitlines():
+        body = line.strip()
+        if not body:
+            continue
+        m = MEDIA_TAG.match(body)
+        if m and m.group(1).lower() in MEDIA:
+            if m.group(1).lower() != medium:
+                continue
+            return body[m.end():].strip()
+        return body
+    return ""
+
+
 def rebase_images(text, base):
     """Point an inline ![](art/x.png) at the right place for the file being
     written: the markdown copies live in different directories."""
@@ -472,17 +508,17 @@ def render(sheet, linked, video_url, base=OUT, dl="", frames=None):
         add("")
     medium = "screen" if linked else "print"
     for sec in fm.get("sections") or []:
-        if sec.get("heading"):
-            add("## " + str(sec["heading"]).strip())
+        head = line_for_medium(sec.get("heading"), medium)
+        if head:
+            add("## " + head)
             add("")
         add(for_medium(str(sec.get("text", "")), medium))
         add("")
     add(f"`{build_stamp()}`")
     add("")
-    add("OCA, Russian recension · Diocese of New York and New Jersey · "
-        "Filmed 20 June 2026. "
-        "Times are positions within each clip, so a direction here sits at the "
-        "same moment in the footage.")
+    colo = for_medium(str(fm.get("colophon", "")), medium).replace("\n\n", " ")
+    if colo:
+        add(colo)
     add("")
     if not linked:
         add("<!-- printed form: convert to HTML and print from a browser, or "
@@ -647,6 +683,41 @@ def data_uri(path):
         return f"data:{mime};base64," + base64.b64encode(f.read()).decode()
 
 
+def qr_uri(url, scale=8, border=0):
+    """A QR code for `url`, as an SVG data URI — or None if segno is absent.
+
+    SVG rather than a raster: a QR is hard edges and nothing else, so it stays
+    exact at whatever size the page gives it and cannot pick up resampling
+    fuzz at the module boundaries, which is precisely what stops a phone
+    reading one.
+
+    Error correction M (15%). A printed rubric is handled, folded and
+    photocopied, so a code that survives a little damage is worth the two
+    extra modules it costs.
+
+    border=0 — no quiet zone inside the image. The symbol still needs one,
+    but the white of the page supplies it, and the stylesheet keeps at least
+    four modules clear on every side. Putting it outside means the image is
+    exactly the code, so a box of a given height holds ink of that height
+    whatever version the symbol comes out as — which is what lets it line up
+    with the still. With the quiet zone inside, the ink was 0.80in in a 0.9in
+    box and looked short beside the picture.
+
+    The QR is print-only. On screen the page has the video itself, and a
+    reader can simply click.
+    """
+    try:
+        import segno
+    except ImportError:
+        return None
+    buf = io.BytesIO()
+    segno.make(url, error="m").save(buf, kind="svg", scale=scale,
+                                    border=border, dark="#111111",
+                                    light=None, xmldecl=False, svgns=True)
+    return ("data:image/svg+xml;base64,"
+            + base64.b64encode(buf.getvalue()).decode())
+
+
 def inline_md(t, breaks=True):
     """The sheet's **bold**, *italic*, _underline_ and [links](to.pdf), as HTML.
 
@@ -695,7 +766,7 @@ def chapter_sections(sheet):
 
 
 def render_html(sheet, video_url, posters=None, medium="screen",
-                frames=None):
+                frames=None, site=SITE):
     posters = posters or {}
     frames = frames or {}
     durs, chap_at = clip_durations(), video_chapter_starts()
@@ -732,17 +803,35 @@ def render_html(sheet, video_url, posters=None, medium="screen",
             f'<a href="{html.escape(video_url)}">Watch the whole video</a>'
             '<a href="rubric.pdf">Download PDF</a>'
             '<a href="rubric.docx">Download Word</a></p>')
+    # On paper the masthead's links are dead text, and a reader holding only
+    # the printed copy has no way to reach the online one. This code is the
+    # route. It is NOT one of the section codes: it plays nothing, it opens
+    # the document — so it is captioned and placed differently on purpose,
+    # or it would be read as "this section's video".
+    if medium == "print":
+        home = qr_uri(site)
+        if home:
+            add('  <div class="homeqr">')
+            add(f'    <img src="{home}" alt="QR code linking to this '
+                f'document online">')
+            add('    <p>Scan to open this document online,<br>'
+                'with the videos</p>')
+            add('  </div>')
     add(f'  <p class="build">{html.escape(build_stamp())}</p>')
-    add('  <p class="colophon">OCA, Russian recension &middot; Diocese of New '
-        'York and New Jersey &middot; Filmed 20 June 2026. Times are positions '
-        'within each clip, so a direction here sits at the same moment in the '
-        'footage.</p>')
+    # The colophon is CONTENT, so it lives in the sheet with the words it
+    # describes rather than as a string in here that a rewording cannot reach.
+    colo = for_medium(str(fm.get("colophon", "")), medium)
+    if colo.strip():
+        add('  <p class="colophon">'
+            + inline_md(colo.replace("\n\n", " ").strip(), breaks=False)
+            + '</p>')
     add("</header>")
 
     for sec in fm.get("sections") or []:
         add('<section class="intro">')
-        if sec.get("heading"):
-            add(f'  <h2>{html.escape(str(sec["heading"]).strip())}</h2>')
+        head = line_for_medium(sec.get("heading"), medium)
+        if head:
+            add(f'  <h2>{html.escape(head)}</h2>')
         for para in for_medium(str(sec.get("text", "")), medium).split("\n\n"):
             if para.strip():
                 add(f"  <p>{inline_md(para.strip(), breaks=False)}</p>")
@@ -780,6 +869,48 @@ def render_html(sheet, video_url, posters=None, medium="screen",
                 add("</section>")
             add(f'<section class="chapter" id="c{n}">')
             open_sec = True
+            vid = video_id(video_url)
+            span = spans.get(t)
+            # In print the player and the poster are both hidden, and
+            # rubric_print.md is built with links off — so on paper there has
+            # been no way to reach the video at all. The same still the web
+            # page uses, with a QR beside it, is that way: the picture says
+            # "this is a video", the code is how a phone opens it, and the two
+            # together need no caption to be understood.
+            #
+            # The still is deliberately NOT the section's first cue frame —
+            # posters are chosen a third of the way in, stepping over cards —
+            # so it adds a picture rather than repeating the one below it.
+            if medium == "print" and vid and span:
+                # NOT a YouTube link. A printed sheet cannot be recalled, and
+                # a YouTube id is not ours to keep: the service will not let a
+                # video's file be replaced, so any re-upload mints a new id
+                # and every sheet already printed becomes wrong. §14 records
+                # that happening once already.
+                #
+                # Pointing at our own page makes the paper durable — the page
+                # is regenerated with whatever id is current, so a re-upload,
+                # or a decision to publish the clips separately, or a move off
+                # YouTube entirely, is absorbed without reprinting anything.
+                #
+                # It also fixes the reason this came up: a bare YouTube link
+                # only starts, it never stops, and the section runs on into
+                # the next. The page already solves that with END_GUARD.
+                #
+                # The fragment is kept alongside ?play= so that with no
+                # JavaScript the reader still lands on the right section.
+                url = f"{site}?play=c{n}#c{n}"
+                qr = qr_uri(url)
+                still = posters.get(f"c{n}") if posters else None
+                if qr:
+                    add('  <div class="vcard">')
+                    if still:
+                        add(f'    <img class="vstill" src="{still}" alt="">')
+                    add(f'    <img class="vqr" src="{qr}" alt="QR code '
+                        f'linking to this section of the video">')
+                    add('    <p class="vcap">Scan to watch</p>')
+                    add('  </div>')
+
             add(f'  <h2>{html.escape(t)}</h2>')
             meta = [f"clip {n}"]
             if durs.get(n):
@@ -791,6 +922,7 @@ def render_html(sheet, video_url, posters=None, medium="screen",
 
             vid = video_id(video_url)
             span = spans.get(t)
+
             if vid and span:
                 st_i, en_i = int(span[0] + 0.5), int(span[1] + 0.5)
                 # A placeholder, not an iframe: the IFrame API builds the
@@ -999,6 +1131,43 @@ END_GUARD = """
     try { if (player) player.destroy(); } catch (e) {}
     while (ctx.box.firstChild) ctx.box.removeChild(ctx.box.firstChild);
     ctx.box.appendChild(ctx.btn);
+    if (ctx.theatre) theatre(false, ctx);
+  }
+
+  /* Theatre: the player fills the screen, and the page waits behind it.
+     Done in CSS rather than through the Fullscreen API, which needs a user
+     gesture — and arriving from a scanned code is a navigation, not a tap, so
+     requestFullscreen() would simply be refused. On iOS it does not apply to
+     an iframe at all. A fixed overlay needs no permission and behaves the
+     same everywhere.
+
+     The reader can still reach TRUE fullscreen from the player's own button,
+     because that is a tap. */
+  function theatre(on, ctx) {
+    var box = ctx.box;
+    document.documentElement.classList.toggle("theatre-on", on);
+    box.classList.toggle("theatre", on);
+    if (on) {
+      if (!ctx.close) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "tclose";
+        b.setAttribute("aria-label", "Close the video and read the section");
+        b.innerHTML = "&#10005;";
+        b.onclick = function () { restore(ctx.player, ctx); };
+        ctx.close = b;
+      }
+      box.appendChild(ctx.close);
+    } else {
+      if (ctx.close && ctx.close.parentNode) {
+        ctx.close.parentNode.removeChild(ctx.close);
+      }
+      /* the section the reader scanned, now that the video has finished or
+         been dismissed — they land on its text rather than wherever the page
+         happened to be scrolled */
+      var sec = box.closest ? box.closest(".chapter") : null;
+      if (sec && sec.scrollIntoView) sec.scrollIntoView();
+    }
   }
 
   function build(box, auto, ctx) {
@@ -1011,6 +1180,10 @@ END_GUARD = """
         start: parseInt(box.getAttribute("data-start"), 10),
         end: parseInt(end, 10),
         autoplay: auto ? 1 : 0,
+        /* inline only in theatre, where our own overlay is already filling
+           the screen; left alone elsewhere so a click in the page behaves
+           exactly as it always has */
+        playsinline: (ctx && ctx.theatre) ? 1 : 0,
         rel: 0
       },
       events: {
@@ -1044,7 +1217,7 @@ END_GUARD = """
 
   /* YT.Player replaces the element it is handed, so give it a throwaway div
      rather than the button, whose parent carries the aspect ratio. */
-  function swap(btn) {
+  function swap(btn, asTheatre) {
     var box = btn.parentNode;
     var slot = document.createElement("div");
     slot.className = "slot";
@@ -1056,17 +1229,53 @@ END_GUARD = """
     var row = box.nextElementSibling;
     var reset = row && row.classList.contains("pctl")
       ? row.querySelector(".reset") : null;
-    var ctx = { box: box, btn: btn, reset: reset, player: null, gone: false };
+    var ctx = { box: box, btn: btn, reset: reset, player: null, gone: false,
+                theatre: !!asTheatre, close: null };
     if (reset) {
       reset.hidden = false;
       reset.onclick = function () { restore(ctx.player, ctx); };
     }
+    box.__ctx = ctx;
+    if (ctx.theatre) theatre(true, ctx);
     queue(slot, true, ctx);
   }
 
   document.querySelectorAll(".player > .poster").forEach(function (btn) {
     btn.addEventListener("click", function () { swap(btn); });
   });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    var box = document.querySelector(".player.theatre");
+    if (box && box.__ctx) restore(box.__ctx.player, box.__ctx);
+  });
+
+  /* ?play=c26 — how a printed QR code arrives.
+     The sheets point here rather than at YouTube so that a re-upload, or
+     publishing the clips separately, never invalidates paper already printed;
+     the cost is that the page has to do what the link asks on arrival.
+
+     Scroll first, then start that section, so the reader sees the section
+     they scanned rather than the top of a very long page. Whether it then
+     plays by itself is the browser's decision — a scan is a navigation, not a
+     tap, so a phone may refuse to autoplay. If it does refuse, the player is
+     built and sitting at the right second and one tap runs it, which is the
+     same behaviour the page has always had. Nothing breaks either way.
+
+     The id is checked against the DOM before use: it comes from a URL, and a
+     mistyped or stale one should do nothing rather than throw. */
+  (function () {
+    var m = /[?&]play=([A-Za-z0-9_-]{1,32})/.exec(window.location.search);
+    if (!m) return;
+    var sec = document.getElementById(m[1]);
+    if (!sec || !sec.classList.contains("chapter")) return;
+    var btn = sec.querySelector(".player > .poster");
+    if (!btn) return;
+    if (sec.scrollIntoView) sec.scrollIntoView();
+    /* after the scroll has settled, and after the poster image has had a
+       moment, so the swap does not fight the browser's own anchor handling */
+    setTimeout(function () { swap(btn, true); }, 260);
+  })();
 
   /* No poster (no master.mp4 when the page was built): fall back to building
      those players outright, so the page still works. */
@@ -1177,6 +1386,37 @@ blockquote.card p{margin:0}
   margin:0 0 .5rem !important;
 }
 .note{color:var(--muted);margin:0 0 1.5rem}
+/* Theatre — how a section looks when the page was opened by a scanned code.
+   The player is taken out of the flow and fills the viewport; the page waits
+   behind it. dvh rather than vh so a phone's collapsing address bar does not
+   leave a strip of page showing along the bottom. */
+html.theatre-on{ overflow:hidden }
+.player.theatre{
+  /* Sized by the insets alone — NOT by 100vw/100dvh. The viewport units
+     bought nothing and cost correctness: with width and height both set,
+     the box is over-constrained against inset:0, and anywhere dvh resolves
+     to zero the overlay collapses to nothing and the page appears blank.
+     It did exactly that. inset:0 on a fixed box already means "the viewport",
+     and it tracks a phone's collapsing address bar without help.
+     width/height:auto are here only to beat .player{width:100%}. */
+  position:fixed; inset:0; z-index:9999;
+  width:auto; height:auto; max-width:none;
+  aspect-ratio:auto; border:0; border-radius:0; background:#000;
+  margin:0;
+}
+.player.theatre iframe{ width:100%; height:100% }
+.tclose{
+  position:absolute; top:max(.6rem, env(safe-area-inset-top)); right:.6rem;
+  z-index:1; width:2.4rem; height:2.4rem; border-radius:50%;
+  border:0; background:rgba(0,0,0,.55); color:#fff; font-size:1.1rem;
+  line-height:1; cursor:pointer;
+}
+.tclose:focus-visible{ outline:2px solid #fff; outline-offset:2px }
+@media (prefers-reduced-motion:no-preference){
+  .player.theatre{ animation:theatrein .18s ease-out }
+  @keyframes theatrein{ from{ opacity:0 } to{ opacity:1 } }
+}
+
 .player{
   position:relative; width:100%; aspect-ratio:16/9; margin:0;
   border:1px solid var(--rule); border-radius:3px; overflow:hidden;
@@ -1309,6 +1549,61 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
   figure img{border:1px solid #999}
   .player,.pctl{display:none}
 
+  /* The video card: the section's own still, with a QR beside it. It floats
+     into the space to the right of the heading, which is empty on paper, so
+     it costs no vertical room and the cue frames below keep their column.
+     shape-outside is not needed — the heading and the ON SCREEN card are both
+     block boxes that simply narrow beside it. */
+  .vcard{
+    float:right; width:2.7in; margin:0 0 .5rem .6rem;
+    display:flex; flex-wrap:wrap; gap:.14in; align-items:flex-start;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  /* The still and the code are set to ONE height and sit on a common top
+     edge. The posters are exactly 16:9, so 0.9in high makes the still 1.6in
+     wide, and 1.6 + gap + 0.9 keeps the pair inside the 2.7in float — wide
+     enough to leave a long chapter title room to set beside it.
+     box-sizing so the still's 1px border is inside the 0.9in and the two
+     boxes really are the same height, not the same height plus a border. */
+  .vcard .vstill{
+    width:1.6in; height:0.9in; box-sizing:border-box; object-fit:cover;
+    border:1px solid #999; display:block;
+  }
+  /* No border and no background behind the code. The quiet zone is part of
+     the symbol, and here the white of the page supplies it; a frame drawn
+     tight against the modules is a common reason a phone will not read one. */
+  .vcard .vqr{ width:0.9in; height:0.9in; display:block }
+  /* The quiet zone, supplied by the page. At 0.9in over 33 modules a module
+     is 0.027in, so four modules is 0.11in — the gap to the still is 0.14in,
+     the page margin is clear to the right, and this keeps the caption far
+     enough below. */
+  .vcard .vcap{ margin-top:0.14in }
+  .vcard .vcap{
+    flex-basis:100%; margin:.18rem 0 0; font-size:7.6pt; color:#555;
+    text-align:right;
+    font-family:"IBM Plex Mono",ui-monospace,monospace; letter-spacing:.02em;
+  }
+  /* A float narrows the LINES beside it, not the block box — so the grey
+     ON SCREEN card ran its background underneath the still, and the cue text
+     ran under the caption. Only the heading and its meta line, which are
+     plain text, may sit alongside; everything with a background or a frame
+     column of its own clears it. */
+  .chapter blockquote.card,.chapter ol.cues,.chapter figure{clear:right}
+
+  /* The masthead code. Deliberately unlike the section cards: no still
+     beside it, and a caption that says it opens the document rather than
+     plays anything. */
+  .masthead{ position:relative }
+  .homeqr{ float:right; width:1.5in; margin:0 0 .5rem .6rem; text-align:center }
+  .homeqr img{ width:1.1in; height:1.1in; display:block; margin:0 auto }
+  .homeqr p{
+    margin:.14in 0 0; font-size:7.6pt; color:#555; line-height:1.35;
+    font-family:"IBM Plex Mono",ui-monospace,monospace; letter-spacing:.02em;
+  }
+  .masthead h1,.masthead .eyebrow,.masthead .colophon,.masthead .build{
+    max-width:5.2in;
+  }
+
   /* A card is printed to be cut out, so it gets a sheet to itself: the chart
      at its true size inside the cut line, and the back of that sheet blank,
      so removing it takes nothing else with it.
@@ -1437,6 +1732,9 @@ def main():
                          "or a single .yaml file")
     ap.add_argument("--video", default="", metavar="URL",
                     help="video URL; chapter timecodes become links to it")
+    ap.add_argument("--site", default=SITE, metavar="URL",
+                    help="the published page; the printed QR codes point "
+                         "here, not at YouTube")
     ap.add_argument("--no-frames", action="store_true",
                     help="leave the video frames out of the PDF")
     a = ap.parse_args()
@@ -1471,7 +1769,7 @@ def main():
     frames = {} if a.no_frames else annotation_frames(annotation_times())
     doc = render_html(a.sheet, a.video,
                       {k: "../docs/" + v for k, v in docs_posters.items()},
-                      medium="print", frames=frames)
+                      medium="print", frames=frames, site=a.site)
     path = os.path.join(OUT, "rubric.html")
     with open(path, "w", encoding="utf-8") as f:
         f.write(doc)

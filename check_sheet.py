@@ -50,6 +50,22 @@ def clip_durations():
     return durs
 
 
+def check_markers(where, text, err, lines=False):
+    """A mistyped @screen/@print would silently appear in BOTH copies, which
+    is exactly the failure the marker exists to prevent. So anything that
+    looks like a marker and is not one is an error.
+
+    `lines` for a one-line field — a heading or the colophon — where the
+    versions are written one per line rather than as separate paragraphs.
+    """
+    parts = text.splitlines() if lines else text.split("\n\n")
+    for part in parts:
+        m = re.match(r"^@(\w+)", part.strip())
+        if m and m.group(1).lower() not in ("screen", "print"):
+            err(where, f"starts with @{m.group(1)} — the only markers are "
+                       f"@screen and @print")
+
+
 def _first(d, *names):
     for n in names:
         if n in d and d[n] is not None:
@@ -271,8 +287,12 @@ def validate(path):
                 err(where, "intro: expected a block with title/subtitle/sections")
                 continue
             for k in intro:
-                if k not in ("title", "subtitle", "text", "sections"):
+                if k not in ("title", "subtitle", "text", "sections",
+                             "colophon"):
                     err(f"{where} intro", f"unknown key {k!r}")
+            # the colophon takes the same @screen/@print markers as any prose
+            check_markers(f"{where} intro colophon",
+                          str(intro.get("colophon", "")), err)
             for j, sec in enumerate(intro.get("sections") or [], 1):
                 if not isinstance(sec, dict):
                     err(f"{where} intro section {j}", "expected heading and text")
@@ -282,6 +302,11 @@ def validate(path):
                         err(f"{where} intro section {j}", f"unknown key {k!r}")
                 if not str(sec.get("text", "")).strip():
                     err(f"{where} intro section {j}", "no text")
+                check_markers(f"{where} intro section {j}",
+                              str(sec.get("text", "")), err)
+                # a heading may carry the markers too, one version per line
+                check_markers(f"{where} intro section {j} heading",
+                              str(sec.get("heading", "")), err, lines=True)
             continue
 
         # An appendix is one block: the id after `appendix:` is the label the
@@ -306,13 +331,9 @@ def validate(path):
             img = str(b.get("image", "")).strip()
             if img and not os.path.exists(img):
                 err(where, f"image not found: {img}")
-            # a mistyped @screen/@print would silently show in both, which is
-            # exactly the failure the marker exists to prevent
-            for para in str(b.get("text", "")).split("\n\n"):
-                m = re.match(r"^@(\w+)", para.strip())
-                if m and m.group(1).lower() not in ("screen", "print"):
-                    err(where, f"paragraph starts with @{m.group(1)} — "
-                               f"the only markers are @screen and @print")
+            check_markers(where, str(b.get("text", "")), err)
+            check_markers(where + " heading", str(b.get("heading", "")), err,
+                          lines=True)
             continue
         if not isinstance(b, dict):
             err(where, f"expected a clip block, got {type(b).__name__}"); continue

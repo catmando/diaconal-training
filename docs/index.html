@@ -104,6 +104,37 @@ blockquote.card p{margin:0}
   margin:0 0 .5rem !important;
 }
 .note{color:var(--muted);margin:0 0 1.5rem}
+/* Theatre — how a section looks when the page was opened by a scanned code.
+   The player is taken out of the flow and fills the viewport; the page waits
+   behind it. dvh rather than vh so a phone's collapsing address bar does not
+   leave a strip of page showing along the bottom. */
+html.theatre-on{ overflow:hidden }
+.player.theatre{
+  /* Sized by the insets alone — NOT by 100vw/100dvh. The viewport units
+     bought nothing and cost correctness: with width and height both set,
+     the box is over-constrained against inset:0, and anywhere dvh resolves
+     to zero the overlay collapses to nothing and the page appears blank.
+     It did exactly that. inset:0 on a fixed box already means "the viewport",
+     and it tracks a phone's collapsing address bar without help.
+     width/height:auto are here only to beat .player{width:100%}. */
+  position:fixed; inset:0; z-index:9999;
+  width:auto; height:auto; max-width:none;
+  aspect-ratio:auto; border:0; border-radius:0; background:#000;
+  margin:0;
+}
+.player.theatre iframe{ width:100%; height:100% }
+.tclose{
+  position:absolute; top:max(.6rem, env(safe-area-inset-top)); right:.6rem;
+  z-index:1; width:2.4rem; height:2.4rem; border-radius:50%;
+  border:0; background:rgba(0,0,0,.55); color:#fff; font-size:1.1rem;
+  line-height:1; cursor:pointer;
+}
+.tclose:focus-visible{ outline:2px solid #fff; outline-offset:2px }
+@media (prefers-reduced-motion:no-preference){
+  .player.theatre{ animation:theatrein .18s ease-out }
+  @keyframes theatrein{ from{ opacity:0 } to{ opacity:1 } }
+}
+
 .player{
   position:relative; width:100%; aspect-ratio:16/9; margin:0;
   border:1px solid var(--rule); border-radius:3px; overflow:hidden;
@@ -236,6 +267,61 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
   figure img{border:1px solid #999}
   .player,.pctl{display:none}
 
+  /* The video card: the section's own still, with a QR beside it. It floats
+     into the space to the right of the heading, which is empty on paper, so
+     it costs no vertical room and the cue frames below keep their column.
+     shape-outside is not needed — the heading and the ON SCREEN card are both
+     block boxes that simply narrow beside it. */
+  .vcard{
+    float:right; width:2.7in; margin:0 0 .5rem .6rem;
+    display:flex; flex-wrap:wrap; gap:.14in; align-items:flex-start;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  /* The still and the code are set to ONE height and sit on a common top
+     edge. The posters are exactly 16:9, so 0.9in high makes the still 1.6in
+     wide, and 1.6 + gap + 0.9 keeps the pair inside the 2.7in float — wide
+     enough to leave a long chapter title room to set beside it.
+     box-sizing so the still's 1px border is inside the 0.9in and the two
+     boxes really are the same height, not the same height plus a border. */
+  .vcard .vstill{
+    width:1.6in; height:0.9in; box-sizing:border-box; object-fit:cover;
+    border:1px solid #999; display:block;
+  }
+  /* No border and no background behind the code. The quiet zone is part of
+     the symbol, and here the white of the page supplies it; a frame drawn
+     tight against the modules is a common reason a phone will not read one. */
+  .vcard .vqr{ width:0.9in; height:0.9in; display:block }
+  /* The quiet zone, supplied by the page. At 0.9in over 33 modules a module
+     is 0.027in, so four modules is 0.11in — the gap to the still is 0.14in,
+     the page margin is clear to the right, and this keeps the caption far
+     enough below. */
+  .vcard .vcap{ margin-top:0.14in }
+  .vcard .vcap{
+    flex-basis:100%; margin:.18rem 0 0; font-size:7.6pt; color:#555;
+    text-align:right;
+    font-family:"IBM Plex Mono",ui-monospace,monospace; letter-spacing:.02em;
+  }
+  /* A float narrows the LINES beside it, not the block box — so the grey
+     ON SCREEN card ran its background underneath the still, and the cue text
+     ran under the caption. Only the heading and its meta line, which are
+     plain text, may sit alongside; everything with a background or a frame
+     column of its own clears it. */
+  .chapter blockquote.card,.chapter ol.cues,.chapter figure{clear:right}
+
+  /* The masthead code. Deliberately unlike the section cards: no still
+     beside it, and a caption that says it opens the document rather than
+     plays anything. */
+  .masthead{ position:relative }
+  .homeqr{ float:right; width:1.5in; margin:0 0 .5rem .6rem; text-align:center }
+  .homeqr img{ width:1.1in; height:1.1in; display:block; margin:0 auto }
+  .homeqr p{
+    margin:.14in 0 0; font-size:7.6pt; color:#555; line-height:1.35;
+    font-family:"IBM Plex Mono",ui-monospace,monospace; letter-spacing:.02em;
+  }
+  .masthead h1,.masthead .eyebrow,.masthead .colophon,.masthead .build{
+    max-width:5.2in;
+  }
+
   /* A card is printed to be cut out, so it gets a sheet to itself: the chart
      at its true size inside the cut line, and the back of that sheet blank,
      so removing it takes nothing else with it.
@@ -282,8 +368,8 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
   <p class="eyebrow">For deacons, subdeacons and altar servers</p>
   <h1>Rubrics for Serving at a Hierarchical Liturgy</h1>
   <p class="actions"><a href="https://youtu.be/aRs9oqKMCd8">Watch the whole video</a><a href="rubric.pdf">Download PDF</a><a href="rubric.docx">Download Word</a></p>
-  <p class="build">generated 28 Aug 2026, 23:52 · bcba74b</p>
-  <p class="colophon">OCA, Russian recension &middot; Diocese of New York and New Jersey &middot; Filmed 20 June 2026. Times are positions within each clip, so a direction here sits at the same moment in the footage.</p>
+  <p class="build">generated 15 Sep 2026, 18:33 · e99da7f</p>
+  <p class="colophon">A step-by-step guide to serving at a hierarchical Divine Liturgy, from the greeting of the bishop at the doors through the Great Entrance, built on video footage recorded 20 June 2026 at Saints Peter and Paul Church, Endicott NY. OCA, Russian recension · Diocese of New York and New Jersey.</p>
 </header>
 <section class="intro">
   <h2>How to use this webpage</h2>
@@ -291,11 +377,6 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
   <p>If you would rather watch straight through, or print the whole thing and make your own notes, the links at the top of this page will do it.</p>
   <p>Times shown beside each heading are positions within that clip, so they match the moment in the footage rather than the running time of the whole service.</p>
   <p>There are also useful appendices at the end of the document (see the table of contents)</p>
-</section>
-<section class="intro">
-  <h2>Help us Make this better!</h2>
-  <p>This site came out of the 2026 Diocese of NY and NJ Deaconal Retreat. The video was recorded at the retreat, and was edited and annotated by Dn. Mitch VanDuyn, of St. John the Baptist Rochester NY.</p>
-  <p>Please forgive me for any errors, or omissions, and your corrections and input are most welcome.</p>
 </section>
 <nav class="toc" aria-label="Contents"><h2>Contents</h2><ol>
   <li><span class="num">1</span><a href="#c1">Greeting of the Hierarch at the Doors</a><span class="tc">0:00</span></li>
@@ -1783,6 +1864,43 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
     try { if (player) player.destroy(); } catch (e) {}
     while (ctx.box.firstChild) ctx.box.removeChild(ctx.box.firstChild);
     ctx.box.appendChild(ctx.btn);
+    if (ctx.theatre) theatre(false, ctx);
+  }
+
+  /* Theatre: the player fills the screen, and the page waits behind it.
+     Done in CSS rather than through the Fullscreen API, which needs a user
+     gesture — and arriving from a scanned code is a navigation, not a tap, so
+     requestFullscreen() would simply be refused. On iOS it does not apply to
+     an iframe at all. A fixed overlay needs no permission and behaves the
+     same everywhere.
+
+     The reader can still reach TRUE fullscreen from the player's own button,
+     because that is a tap. */
+  function theatre(on, ctx) {
+    var box = ctx.box;
+    document.documentElement.classList.toggle("theatre-on", on);
+    box.classList.toggle("theatre", on);
+    if (on) {
+      if (!ctx.close) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "tclose";
+        b.setAttribute("aria-label", "Close the video and read the section");
+        b.innerHTML = "&#10005;";
+        b.onclick = function () { restore(ctx.player, ctx); };
+        ctx.close = b;
+      }
+      box.appendChild(ctx.close);
+    } else {
+      if (ctx.close && ctx.close.parentNode) {
+        ctx.close.parentNode.removeChild(ctx.close);
+      }
+      /* the section the reader scanned, now that the video has finished or
+         been dismissed — they land on its text rather than wherever the page
+         happened to be scrolled */
+      var sec = box.closest ? box.closest(".chapter") : null;
+      if (sec && sec.scrollIntoView) sec.scrollIntoView();
+    }
   }
 
   function build(box, auto, ctx) {
@@ -1795,6 +1913,10 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
         start: parseInt(box.getAttribute("data-start"), 10),
         end: parseInt(end, 10),
         autoplay: auto ? 1 : 0,
+        /* inline only in theatre, where our own overlay is already filling
+           the screen; left alone elsewhere so a click in the page behaves
+           exactly as it always has */
+        playsinline: (ctx && ctx.theatre) ? 1 : 0,
         rel: 0
       },
       events: {
@@ -1828,7 +1950,7 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
 
   /* YT.Player replaces the element it is handed, so give it a throwaway div
      rather than the button, whose parent carries the aspect ratio. */
-  function swap(btn) {
+  function swap(btn, asTheatre) {
     var box = btn.parentNode;
     var slot = document.createElement("div");
     slot.className = "slot";
@@ -1840,17 +1962,53 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
     var row = box.nextElementSibling;
     var reset = row && row.classList.contains("pctl")
       ? row.querySelector(".reset") : null;
-    var ctx = { box: box, btn: btn, reset: reset, player: null, gone: false };
+    var ctx = { box: box, btn: btn, reset: reset, player: null, gone: false,
+                theatre: !!asTheatre, close: null };
     if (reset) {
       reset.hidden = false;
       reset.onclick = function () { restore(ctx.player, ctx); };
     }
+    box.__ctx = ctx;
+    if (ctx.theatre) theatre(true, ctx);
     queue(slot, true, ctx);
   }
 
   document.querySelectorAll(".player > .poster").forEach(function (btn) {
     btn.addEventListener("click", function () { swap(btn); });
   });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    var box = document.querySelector(".player.theatre");
+    if (box && box.__ctx) restore(box.__ctx.player, box.__ctx);
+  });
+
+  /* ?play=c26 — how a printed QR code arrives.
+     The sheets point here rather than at YouTube so that a re-upload, or
+     publishing the clips separately, never invalidates paper already printed;
+     the cost is that the page has to do what the link asks on arrival.
+
+     Scroll first, then start that section, so the reader sees the section
+     they scanned rather than the top of a very long page. Whether it then
+     plays by itself is the browser's decision — a scan is a navigation, not a
+     tap, so a phone may refuse to autoplay. If it does refuse, the player is
+     built and sitting at the right second and one tap runs it, which is the
+     same behaviour the page has always had. Nothing breaks either way.
+
+     The id is checked against the DOM before use: it comes from a URL, and a
+     mistyped or stale one should do nothing rather than throw. */
+  (function () {
+    var m = /[?&]play=([A-Za-z0-9_-]{1,32})/.exec(window.location.search);
+    if (!m) return;
+    var sec = document.getElementById(m[1]);
+    if (!sec || !sec.classList.contains("chapter")) return;
+    var btn = sec.querySelector(".player > .poster");
+    if (!btn) return;
+    if (sec.scrollIntoView) sec.scrollIntoView();
+    /* after the scroll has settled, and after the poster image has had a
+       moment, so the swap does not fight the browser's own anchor handling */
+    setTimeout(function () { swap(btn, true); }, 260);
+  })();
 
   /* No poster (no master.mp4 when the page was built): fall back to building
      those players outright, so the page still works. */

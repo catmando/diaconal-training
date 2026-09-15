@@ -7,31 +7,49 @@
     title: Rubrics for Serving at a Hierarchical Liturgy
     subtitle: For deacons, subdeacons and altar servers
 
+    # A short summary of what this is. It sits under the title in both the
+    # web page and the printed document. @screen / @print may be used here
+    # as anywhere else — see the note on the two versions below.
+    colophon: |
+      A step-by-step guide to serving at a hierarchical Divine Liturgy, from
+      the greeting of the bishop at the doors through the Great Entrance,
+      built on video footage recorded 20 June 2026 at Saints Peter and Paul
+      Church, Endicott NY. OCA, Russian recension · Diocese of New York and
+      New Jersey.
+
     sections:
-      - heading: How to use this webpage
+      # The heading differs by medium. One line per version; an unmarked
+      # line is used for both.
+      - heading: |
+          @screen How to use this webpage
+          @print  How to use this document
         text: |
-          Every section below carries the part of the video it describes.
-          Press play and it stops where the section ends, so you can read
-          a direction and watch it without hunting through an hour of
-          footage.
+          @screen Every section below carries the part of the video it
+          describes. Press play and it stops where the section ends, so you
+          can read a direction and watch it without hunting through an hour
+          of footage.
 
-          If you would rather watch straight through, or print the whole
-          thing and make your own notes, the links at the top of this page
-          will do it.
+          @screen If you would rather watch straight through, or print the
+          whole thing and make your own notes, the links at the top of this
+          page will do it.
 
-          Times shown beside each heading are positions within that clip,
-          so they match the moment in the footage rather than the running
-          time of the whole service.
+          @screen Times shown beside each heading are positions within that
+          clip, so they match the moment in the footage rather than the
+          running time of the whole service.
 
-          There are also useful appendices at the end of the document (see the
-          table of contents)
-      
-      - heading: Help us Make this better!
-        text: |
-          This site came out of the 2026 Diocese of NY and NJ Deaconal 
-          Retreat.  The video was recorded at the retreat, and was edited
-          and annotated by Dn. Mitch VanDuyn, of St. John the Baptist 
-          Rochester NY.  
+          @screen There are also useful appendices at the end of the document
+          (see the table of contents)
 
-          Please forgive me for any errors, or omissions, and your corrections
-          and input are most welcome.
+          @print This document has a section covering each step in the
+          hierarchical liturgy. There are some of the major rubrics to
+          consider for each step, and there is a video clip accompanying the
+          step. The video clip may be accessed by scanning the QR code with
+          your phone or tablet.
+
+          @print Alternatively you may go to the online document and follow
+          along there, and use this document for taking notes, and for future
+          reference.
+
+          @print There are also useful appendices at the end of the document
+          (see the table of contents) some which can be cut out and pasted
+          into your liturgy book for reference in the liturgy.

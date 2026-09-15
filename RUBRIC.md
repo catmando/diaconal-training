@@ -6,35 +6,29 @@
 
 ## How to use this webpage
 
-Every section below carries the part of the video it describes.
-Press play and it stops where the section ends, so you can read
-a direction and watch it without hunting through an hour of
-footage.
+Every section below carries the part of the video it
+describes. Press play and it stops where the section ends, so you
+can read a direction and watch it without hunting through an hour
+of footage.
 
-If you would rather watch straight through, or print the whole
-thing and make your own notes, the links at the top of this page
-will do it.
+If you would rather watch straight through, or print the
+whole thing and make your own notes, the links at the top of this
+page will do it.
 
-Times shown beside each heading are positions within that clip,
-so they match the moment in the footage rather than the running
-time of the whole service.
+Times shown beside each heading are positions within that
+clip, so they match the moment in the footage rather than the
+running time of the whole service.
 
-There are also useful appendices at the end of the document (see the
-table of contents)
+There are also useful appendices at the end of the document
+(see the table of contents)
 
-## Help us Make this better!
+`generated 15 Sep 2026, 18:33 · e99da7f`
 
-This site came out of the 2026 Diocese of NY and NJ Deaconal 
-Retreat.  The video was recorded at the retreat, and was edited
-and annotated by Dn. Mitch VanDuyn, of St. John the Baptist 
-Rochester NY.
-
-Please forgive me for any errors, or omissions, and your corrections
-and input are most welcome.
-
-`generated 28 Aug 2026, 23:52 · bcba74b`
-
-OCA, Russian recension · Diocese of New York and New Jersey · Filmed 20 June 2026. Times are positions within each clip, so a direction here sits at the same moment in the footage.
+A step-by-step guide to serving at a hierarchical Divine Liturgy, from
+the greeting of the bishop at the doors through the Great Entrance,
+built on video footage recorded 20 June 2026 at Saints Peter and Paul
+Church, Endicott NY. OCA, Russian recension · Diocese of New York and
+New Jersey.
 
 ---
 
