@@ -1,0 +1,37 @@
+# Chapter addresses as last PUBLISHED. Written by check_links.py --bless.
+# Regenerating the document must not change these, or links already handed out move.
+clip	start	end	anchor	title
+1	0	71	greeting-of-the-hierarch-at-the-doors	Greeting of the Hierarch at the Doors
+2	71	155	the-bishop-enters-the-nave	The Bishop Enters the Nave
+3	155	193	entrance-prayers	Entrance Prayers
+4	193	267	preparing-to-vest-the-bishop	Preparing to Vest the Bishop
+5	267	376	vesting-the-bishop	Vesting the Bishop
+6	376	512	the-blessing-of-the-dikiri-and-trikiri	The Blessing of the Dikiri and Trikiri
+7	512	610	final-prayers-before-the-liturgy	Final Prayers before the Liturgy
+8	610	697	washing-of-the-hands	Washing of the Hands
+9	697	737	completion-of-the-washing-of-hands-and-the-second-litany	Completion of the Washing of Hands and the Second Litany
+10	737	768	the-second-antiphon	The Second Antiphon
+11	768	848	the-beginning-of-the-little-entrance	The Beginning of the Little Entrance
+12	848	954	the-conclusion-of-the-little-entrance	The Conclusion of the Little Entrance
+14	954	1082	hierarchical-censing-after-the-great-entrance	Hierarchical Censing After the Great Entrance
+15	1082	1330	troparion-kontakion-save-the-pious-and-the-thrice-holy	Troparion, Kontakion, Save the Pious and the Thrice Holy
+16	1330	1389	conclusion-of-thrice-holy	Conclusion of Thrice Holy
+17	1389	1592	lesser-censing-and-epistle-reading	Lesser Censing, and Epistle Reading
+18	1592	1650	alleluias-and-the-gospel-book-goes-out	Alleluias and the Gospel Book Goes Out
+19	1650	1721	reading-of-the-gospel	Reading of the Gospel
+20	1721	1756	gospel-is-returned-to-the-altar	Gospel is Returned to the Altar
+21	1756	1777	augmented-litany-begins	Augmented Litany Begins
+22	1777	2185	augmented-litany-through-censing-before-great-entrance	Augmented Litany through censing before great entrance
+23	2185	2201	clergy-kissing-the-bishops-shoulder	Clergy Kissing the Bishops Shoulder
+25	2201	2216	the-bishop-makes-his-commemorations	The Bishop makes His Commemorations
+26	2216	2444	covering-the-gifts-and-the-great-entrance	Covering the Gifts and The Great Entrance
+27	2474	2519	conclusion-of-the-great-entrance	Conclusion of the Great Entrance
+28	2519	2550	litany-of-supplication-and-the-creed	Litany of Supplication and the Creed
+29	2550	2691	the-anaphora-part-1	The anaphora part 1
+30	2691	2794	the-anaphora-part-2	The anaphora part 2
+31	2794	2862	the-anaphora-part-3	The anaphora part 3
+32	2862	3112	the-anaphora-part-4	The anaphora part 4
+34	3112	3210	after-communion	After Communion
+35	3210	3293	litany-of-thanksgiving	Litany of Thanksgiving
+36	3293	3547	final-blessing-and-many-years	Final blessing and Many Years
+37	3547	3574	conclusion	Conclusion

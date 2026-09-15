@@ -87,9 +87,10 @@ cards a `--clip` preview includes — `none` makes preview times equal the
 clip's own times, which is what you want while timing text; `all` matches the
 finished video.
 
-Four supporting scripts, none of which touch the video: `check_sheet.py`
+Five supporting scripts, none of which touch the video: `check_sheet.py`
 (the same validation, standalone — syntax, unknown keys, annotations past the
-end of their clip, overlaps), `check_environment.sh` (verify a machine can build —
+end of their clip, overlaps), `check_links.py` (prove a sheet edit did not
+move a published link — §14), `check_environment.sh` (verify a machine can build —
 run it before committing hours to a normalize pass), `restore_raw_clips.sh`
 (fetch and SHA-256 verify the footage), `make_manifest.sh` (regenerate
 `raw_clips.tsv`).
@@ -631,6 +632,8 @@ what the written sources are vaguest about.
 | `restore_raw_clips.sh` | download the footage from the release and verify it |
 | `check_environment.sh` | verify a machine can build before committing hours |
 | `check_sheet.py` | validate the edit sheet without building |
+| `check_links.py` | prove a sheet edit did not move a published link (§14) |
+| `published_links.tsv` | the blessed baseline `check_links.py` compares against |
 | `make_document.py` | build the written rubric — markdown and HTML |
 | `make_manifest.sh` | regenerate `raw_clips.tsv` |
 | `make_roles_card.sh` | the roles chart → a card to print and cut out |
@@ -814,6 +817,53 @@ four appendices. All 34 chapters kept their id, title, timecode and player
 span through that change, so links already sent out still land where they
 did — worth re-checking the same way after any future regeneration, since
 about five people were holding the link at the time.
+
+### Checking that a link still lands — `check_links.py`
+
+The rubric went out for review on 14 Sep 2026, so annotation edits now arrive
+in a steady trickle and the number of people holding links only grows. This
+script is what makes that safe. Written and verified 15 Sep 2026.
+
+**Most edits are free.** Times are written against original clip time (§5), so
+changing an annotation's `text:`, `role:` or `notes:` moves nothing at all.
+
+**These are not.** Adding, removing or resizing a **card**; editing a **cut**
+or **speed** span; `skip:` on a clip. Each shifts every chapter time after it.
+In `git diff` of the sheet that looks exactly like a wording change, and §8b
+is the reminder that the failure is silent — the build prints a plausible
+total and the wrong times reach the page.
+
+Three separately breakable addresses per section, which is why the check
+exists at all:
+
+| address | comes from | breaks when |
+|---|---|---|
+| `#c26` in the page | the **clip number** | the section stops existing |
+| `#the-great-entrance` in `RUBRIC.md` | the **title**, slugged | the title is reworded |
+| `data-start` / `data-end` | `chapters.txt` | anything ahead changes duration |
+
+```bash
+python3 check_links.py            # what moved since the last publish?
+python3 check_links.py --live     # ...and is the baseline what is being served?
+python3 check_links.py --bless    # record this state as published
+```
+
+Exit status is 1 when something moved, so it can gate a publish. The baseline
+is `published_links.tsv`, **committed** so it travels with the repo.
+
+**`--bless` is a deliberate act, done AFTER a successful publish**, never
+before — blessing a broken state is the one way to defeat the whole thing.
+
+Two things it catches that are easy to miss. **The page looks its times up by
+title**, so two sections sharing a title silently both get the first one's —
+warned about on every run. And **`--live` reads the site**, not HEAD, which is
+§14's own rule about where the truth is.
+
+Verified on the real thing when written: blessed from the local build, and
+`--live` confirmed all 34 sections match what GitHub Pages is serving. Then
+doctored baselines confirmed it actually fails — a reworded title, a start
+moved 10s, a section removed, and a section that no longer exists each
+reported, exit 1. A guard that has only ever said OK is not a proven guard.
 
 `docs/staging/` is deliberately **untracked**. It cannot reach the site, and
 that is what makes it safe: publishing is `git add` of explicit paths, never
