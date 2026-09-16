@@ -865,6 +865,19 @@ all to type.
 The masthead carries that address **in words as well as in code** — a QR is
 useless to anyone without a phone in their hand.
 
+### The contents, and the appendices list
+
+In print they are **two lists**: *Contents* for the 34 sections, then
+*Appendices* opening a page of its own. The clip list runs long enough that a
+single appendix line was being stranded on a third page by itself, which
+reads as a mistake rather than a layout. On screen it stays one list — there
+are no pages there for a line to be stranded on.
+
+`break-inside:avoid` belongs on `.toc li`, **not on `.toc`**. On the nav it
+forbids the list splitting at all, so a 34-row contents was shoved off page 1
+entirely while it looked for a page it could fit on. That regressed the
+pagination in a way that looked like a page-break bug and was not.
+
 ### `--draft` — the watermark
 
 ```bash

@@ -22,7 +22,7 @@ running time of the whole service.
 There are also useful appendices at the end of the document
 (see the table of contents)
 
-`generated 15 Sep 2026, 19:00 · 5c6c265`
+`generated 16 Sep 2026, 11:25 · dd866c2`
 
 A step-by-step guide to serving at a hierarchical Divine Liturgy, from
 the greeting of the bishop at the doors through the Great Entrance,

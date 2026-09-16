@@ -260,7 +260,15 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
   .actions{display:none}
   .intro{max-width:none;padding:1.4rem 0 0}
   .intro h2{color:#555}
-  .toc{page-break-after:always;padding-top:1.2rem}
+  .toc{padding-top:1.2rem}
+  /* rows only. On the whole nav this forbids the list splitting at all, so
+     a 34-row contents was shoved off page 1 entirely to look for a page it
+     could fit on. */
+  .toc li{break-inside:avoid; page-break-inside:avoid}
+  /* the appendices open a page; the section list therefore does not need a
+     break after it, and forcing one would leave an empty page between them */
+  .toc-appendix{page-break-before:always}
+  .toc-appendix + *{page-break-before:always}
   .toc li:hover{border-bottom-color:transparent}
   .preamble{max-width:none;padding:0 0 1rem}
   /* the opening card should not strand itself on a page of its own */
@@ -384,7 +392,7 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
   <p class="eyebrow">For deacons, subdeacons and altar servers</p>
   <h1>Rubrics for Serving at a Hierarchical Liturgy</h1>
   <p class="actions"><a href="https://youtu.be/aRs9oqKMCd8">Watch the whole video</a><a href="printed.pdf">Download PDF</a><a href="printed.docx">Download Word</a></p>
-  <p class="build">generated 15 Sep 2026, 19:00 · 5c6c265</p>
+  <p class="build">generated 16 Sep 2026, 11:25 · dd866c2</p>
   <p class="colophon">A step-by-step guide to serving at a hierarchical Divine Liturgy, from the greeting of the bishop at the doors through the Great Entrance, built on video footage recorded 20 June 2026 at Saints Peter and Paul Church, Endicott NY. OCA, Russian recension · Diocese of New York and New Jersey.</p>
 </header>
 <section class="intro">

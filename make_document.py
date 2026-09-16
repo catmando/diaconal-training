@@ -867,6 +867,14 @@ def render_html(sheet, video_url, posters=None, medium="screen",
         stamp = (f'<span class="tc">{mmss(at)}</span>' if at is not None else "")
         add(f'  <li><span class="num">{n}</span>'
             f'<a href="#c{n}">{html.escape(t)}</a>{stamp}</li>')
+    # In print the appendices get a list of their own, starting a page. The
+    # clip list runs to 34 rows and was spilling a single appendix line onto
+    # a third page by itself, which reads as a mistake. On screen it stays one
+    # list — there are no pages there for a line to be stranded on.
+    if medium == "print":
+        add("</ol></nav>")
+        add('<nav class="toc toc-appendix" aria-label="Appendices">'
+            '<h2>Appendices</h2><ol>')
     for ap in apps:
         add(f'  <li><span class="num">{html.escape(ap["id"])}</span>'
             f'<a href="#{ap["anchor"]}">{html.escape(ap["heading"])}</a></li>')
@@ -1566,7 +1574,15 @@ a:focus-visible,li:focus-visible{outline:2px solid var(--gold);outline-offset:3p
   .actions{display:none}
   .intro{max-width:none;padding:1.4rem 0 0}
   .intro h2{color:#555}
-  .toc{page-break-after:always;padding-top:1.2rem}
+  .toc{padding-top:1.2rem}
+  /* rows only. On the whole nav this forbids the list splitting at all, so
+     a 34-row contents was shoved off page 1 entirely to look for a page it
+     could fit on. */
+  .toc li{break-inside:avoid; page-break-inside:avoid}
+  /* the appendices open a page; the section list therefore does not need a
+     break after it, and forcing one would leave an empty page between them */
+  .toc-appendix{page-break-before:always}
+  .toc-appendix + *{page-break-before:always}
   .toc li:hover{border-bottom-color:transparent}
   .preamble{max-width:none;padding:0 0 1rem}
   /* the opening card should not strand itself on a page of its own */
