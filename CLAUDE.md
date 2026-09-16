@@ -610,6 +610,16 @@ what the written sources are vaguest about.
   so.
 - **This is OCA / Russian recension.** Do not drift toward Greek or Antiochian
   usage.
+- **"(attached)" after a parish name is canonical usage, not a stray note.**
+  Every deacon is *attached to* a specific church — there are no roaming
+  clergy or monks in the Orthodox Church — so a signature block reading
+  "St. John the Baptist Orthodox Church, Rochester, NY (attached)" is stating
+  his canonical attachment. **Do not delete it**; it was once mistaken for a
+  reference to an enclosure.
+- **Archbishop MICHAEL is "His Eminence Archbishop Michael."** An archbishop
+  takes *His Eminence*; a bishop takes *His Grace*. "His Eminence Bishop
+  Michael" pairs the honorific with the wrong rank, and clergy readers notice
+  at once.
 - The user's priest and the footage are authoritative. Where this project
   infers, it says so. Keep that discipline.
 - When something is broken, give commands **one at a time** and wait for
@@ -1380,3 +1390,50 @@ that produced the pages already pasted into books.
 
 `booklet/` here is **untouched** and still works standalone. Pointing it at
 the template is a separate job, not yet done.
+
+---
+
+## 17. The reviewer letter — `letters/`
+
+A one-page covering letter, posted with the printed rubric to reviewers.
+
+```bash
+python3 letters/make_letter.py                       # a proof
+python3 letters/make_letter.py --names names.txt \
+        --signature signature.png                    # one PDF per name
+```
+
+**Only `make_letter.py` is committed.** The letter carries a personal phone
+number and this repository is public, so `.gitignore` keeps the words and the
+built PDFs out and makes an exception for the generator, which has nothing
+personal in it and would otherwise not survive a fresh clone.
+
+Three things it does on purpose:
+
+- **The QR code is built from the URL in the letter's own prose**, not from a
+  constant. The code and the address a reader types cannot then disagree —
+  which is exactly what the first draft did: the visible text said
+  `diaconal-training` while the link pointed at the old repo *and* the old
+  `rubric.pdf` name, giving a dead link behind live-looking text.
+- **It fits the type to the words, not the words to the type.** One page is
+  the requirement, so it walks a ladder of settings and takes the first that
+  comes out on one page, reporting which rung. Nothing below 10pt — this goes
+  to clergy who may not thank us for 9pt. Adding a sentence later just moves
+  it down a rung instead of silently producing two pages. An explicit
+  `--size`/`--leading` is obeyed exactly, even if it overruns.
+- **The date is set at build time**, so a reprint cannot go out under the date
+  the draft was written. `--date` pins it when the day of posting matters.
+
+Two traps met while building it:
+
+- **A newline means different things in different parts of a letter.** In the
+  body it is only where the line was wrapped, so lines are joined — but
+  "Deacon Mitchell VanDuyn" and the church under it are deliberate lines, and
+  joining them ran the whole sign-off into one sentence. Everything from
+  *Yours in Christ* onward keeps its breaks.
+- **The sign-off must not split across pages.** It did, landing the name and
+  parish alone on page 2. `break-inside:avoid` on the block.
+
+**The salutation is whatever the names file says**, so put the *salutation*
+form there — "Father John", "Deacon Paul" — not the formal address form:
+"Dear The Very Rev. Example Priest" is what a formal line produces.

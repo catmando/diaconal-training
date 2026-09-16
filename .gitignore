@@ -18,3 +18,10 @@ junk/
 
 .DS_Store
 __pycache__/
+
+# The reviewer letters carry a personal phone number and this repo is public,
+# so the WORDS and the built PDFs stay out. The generator itself has no
+# personal data in it and is worth keeping — without this exception it would
+# not survive a fresh clone.
+letters/*
+!letters/make_letter.py
