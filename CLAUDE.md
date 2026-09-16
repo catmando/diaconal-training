@@ -939,6 +939,32 @@ forbids the list splitting at all, so a 34-row contents was shoved off page 1
 entirely while it looked for a page it could fit on. That regressed the
 pagination in a way that looked like a page-break bug and was not.
 
+### The cover — `make_cover.py`
+
+A **two-page** PDF for the printer: the front cover, and a genuinely blank
+page that becomes the rear cover. Submitted alongside the body, not bound
+into it.
+
+```bash
+python3 make_cover.py             # output/cover.pdf
+python3 make_cover.py --at 364    # a different frame from the video
+python3 make_cover.py --no-draft  # once the review is over
+```
+
+- **The image comes from `master.mp4` at full 1920×1080**, not from
+  `docs/posters/`. Those are 560px wide — fine on screen, about 86 dpi across
+  a cover, and visibly soft in print. The default is 806.133s, the wide view
+  of the sanctuary from clip 11.
+- **Title and subtitle come from the sheet's `intro:` block**, so the cover
+  cannot end up saying something the document inside does not.
+- **The rear page is empty, and that was checked.** The draft watermark was
+  landing on it too — "blank" that is 14,000 pixels of grey is not blank. It
+  now renders as a single colour, verified by counting the distinct colours
+  in the rasterised page.
+- **No diagonal watermark on the cover**, only the red DRAFT · FOR REVIEW
+  badge. The diagonal ran straight through the title, which is the one thing
+  on a cover that has to read cleanly.
+
 ### `--draft` — the watermark
 
 ```bash
