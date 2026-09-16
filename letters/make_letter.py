@@ -169,13 +169,23 @@ def read_names(path):
         if col is None:
             sys.exit(f"ERROR: {path} has no 'title-and-name' column "
                      f"(found: {', '.join(head)})")
-        out = [r[col].strip() for r in rows[1:]
-               if len(r) > col and r[col].strip()]
+        # A surname column, if there is one, only ever reaches the FILE NAME
+        # — never the salutation, which stays exactly what the sheet says.
+        # Addressing envelopes by hand means matching a letter to an envelope,
+        # and three Fathers called by first name alone do not sort well.
+        sur = next((i for i, h in enumerate(head)
+                    if h in ("last-name", "last name", "surname")), None)
+        out = []
+        for r in rows[1:]:
+            if len(r) > col and r[col].strip():
+                last = (r[sur].strip() if sur is not None and len(r) > sur
+                        else "")
+                out.append((r[col].strip(), last))
         if not out:
             sys.exit(f"ERROR: {path} has a header but no rows — no one to "
                      f"write to yet.")
         return out
-    return [n.strip() for n in open(path, encoding="utf-8")
+    return [(n.strip(), "") for n in open(path, encoding="utf-8")
             if n.strip() and not n.lstrip().startswith("#")]
 
 
@@ -190,11 +200,11 @@ def build(args, rung=None):
 
     names = read_names(args.names) if args.names else []
     if not names:
-        names = [None]           # one proof copy
+        names = [(None, "")]      # one proof copy
 
     os.makedirs(args.out, exist_ok=True)
     made = []
-    for name in names:
+    for name, last in names:
         body = raw
         if name:
             body = body.replace("{title-and-name}", name)
@@ -229,7 +239,9 @@ def build(args, rung=None):
                 f"<style>{CSS % {'size': args.size, 'lead': args.leading, 'gap': args.gap}}</style>"
                 f"{head}{doc}")
 
-        stem = re.sub(r"[^A-Za-z0-9]+", "_", name).strip("_") if name else "proof"
+        stem = ("proof" if not name else
+                re.sub(r"[^A-Za-z0-9]+", "_",
+                       f"{last} {name}" if last else name).strip("_"))
         hp = os.path.join(args.out, f"letter_{stem}.html")
         pp = os.path.join(args.out, f"letter_{stem}.pdf")
         open(hp, "w", encoding="utf-8").write(page)
