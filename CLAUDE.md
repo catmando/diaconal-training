@@ -2,7 +2,7 @@
 
 Claude Code reads this file automatically at the start of every session.
 
-Last updated: 15 September 2026. Encode complete and in git, raw footage
+Last updated: 16 September 2026. **§0 is the live state — read it first.** Encode complete and in git, raw footage
 archived off-machine, the edit sheet a YAML directory. The rubric is
 published and **out for review**, so annotation edits now arrive in a
 trickle — `check_links.py` (§14) is what keeps that from moving links people
@@ -10,6 +10,54 @@ already hold. The printed document carries **QR codes** that point at our own
 page rather than at YouTube (§14). Service-book insert pages live in
 `booklet/` (§16), and that toolchain has been extracted to a reusable
 template repo.
+
+---
+
+## 0. ⚠ READ THIS FIRST — the rubric is out for review
+
+**Letters went to three reviewers on 16 September 2026** (Fr Alexey Karlgut,
+Fr Jason Vansuch, Fr Deacon Paul Sokol), with a printed, DRAFT-watermarked
+copy each. **The next thing to arrive is their corrections.** A wider audience
+follows.
+
+When edits arrive, do this — **do not wait to be asked**:
+
+```bash
+python3 check_sheet.py                 # 1. the sheet still parses
+python3 check_links.py                 # 2. BEFORE: note what it says
+#    ...make the edits...
+python3 build.py --subs-only           # 3. rebuild; CHECK THE REPORTED TOTAL
+python3 check_links.py                 # 4. AFTER: has anything moved?
+python3 make_document.py --draft --video https://youtu.be/aRs9oqKMCd8
+python3 check_links.py --live          # 5. after publishing
+```
+
+**Tell the user which kind of edit they have made**, because it decides
+whether anything downstream breaks:
+
+| edit | effect |
+|---|---|
+| annotation `text:`, `role:`, `notes:`, prose | **free** — times are written against original clip time (§5) |
+| a **chapter title** | breaks that section's Markdown anchor in `RUBRIC.md` |
+| a **card** added, removed or resized | **moves every chapter time after it** |
+| a **cut** or **speed** span edited | same |
+| `skip:` on a clip | same |
+
+The last three move every QR code and every link after them. `check_links.py`
+is the only thing that tells you, because in `git diff` of the sheet they look
+exactly like a wording change, and §8b is the standing proof that the failure
+is silent — the build prints a plausible total and the wrong times reach the
+page.
+
+**Printed QR codes point at our own site, not at YouTube** (§14), so a
+re-upload does not invalidate paper already posted. Keep it that way.
+
+**`--draft` stays on** until the user says the review is over. Then rebuild
+without it, and say plainly that the watermark is gone.
+
+Also outstanding: the deferred editorial pass (§10) — **do not start it
+early**, the user's explicit instruction — and pagination problems in the
+printed PDF, which the user deferred until the review is in.
 
 ---
 
@@ -599,6 +647,9 @@ what the written sources are vaguest about.
 
 ## 11. Notes for whoever picks this up
 
+- **When review edits arrive, run `check_links.py` before and after, without
+  being asked.** See §0. The user asked specifically to be reminded of this;
+  he should not have to remember it himself.
 - **Claude cannot watch video** — only metadata and extracted stills. Never ask
   for the clips.
 - **Fix plain typos on sight, without asking.** The user's instruction,
