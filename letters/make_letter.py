@@ -146,6 +146,39 @@ strong{ font-weight:600 }
 """
 
 
+def read_names(path):
+    """The recipients. A .csv with a `title-and-name` column, or a plain file
+    with one name per line.
+
+    The column is found by name rather than by position, so adding an address
+    column — or reordering them — cannot silently start addressing letters to
+    someone's postcode.
+    """
+    if not os.path.exists(path):
+        sys.exit(f"ERROR: {path} not found")
+    if path.lower().endswith(".csv"):
+        import csv
+        with open(path, newline="", encoding="utf-8-sig") as fh:
+            rows = list(csv.reader(fh))
+        if not rows:
+            sys.exit(f"ERROR: {path} is empty")
+        # headers may carry stray spaces from a spreadsheet export
+        head = [h.strip().lower() for h in rows[0]]
+        want = ("title-and-name", "title and name", "name")
+        col = next((i for i, h in enumerate(head) if h in want), None)
+        if col is None:
+            sys.exit(f"ERROR: {path} has no 'title-and-name' column "
+                     f"(found: {', '.join(head)})")
+        out = [r[col].strip() for r in rows[1:]
+               if len(r) > col and r[col].strip()]
+        if not out:
+            sys.exit(f"ERROR: {path} has a header but no rows — no one to "
+                     f"write to yet.")
+        return out
+    return [n.strip() for n in open(path, encoding="utf-8")
+            if n.strip() and not n.lstrip().startswith("#")]
+
+
 def build(args, rung=None):
     if rung:
         args.size, args.leading, args.gap, args.qr = (
@@ -155,10 +188,7 @@ def build(args, rung=None):
     if not url:
         print("  ⚠ no URL found in the letter — the QR code will be skipped")
 
-    names = []
-    if args.names:
-        names = [n.strip() for n in open(args.names, encoding="utf-8")
-                 if n.strip() and not n.lstrip().startswith("#")]
+    names = read_names(args.names) if args.names else []
     if not names:
         names = [None]           # one proof copy
 
@@ -235,7 +265,9 @@ def page_count(pdf):
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--names", help="one title-and-name per line; # comments")
+    ap.add_argument("--names", metavar="FILE",
+                    help="a .csv with a title-and-name column, or a plain "
+                         "file with one name per line")
     ap.add_argument("--signature", default="", metavar="FILE",
                     help="signature image, PNG or JPEG")
     ap.add_argument("--sig-width", type=float, default=1.9, metavar="IN")
